@@ -1,0 +1,16 @@
+services:
+  ratelimiter-redis:
+    container_name: ratelimiter-redis
+    image: redis:7.0
+    restart: always
+    ports:
+      - "6379:6379"
+
+  ratelimiter-app:
+    container_name: ratelimiter-app
+    build: .
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ratelimiter-redis
