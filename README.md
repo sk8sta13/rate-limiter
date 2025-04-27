@@ -52,6 +52,7 @@ A persistência dos dados é feita utilizando **Redis**, permitindo o controle d
    TOKEN_G_BLOCKED_FOR_SECONDS=80
    ```  
 A idéia é que tenhamos três tokens com quantidades progressivas de acesso.
+Outro ponto é que a aplicação não precisa ser reiniciada para que a alteração de configuração passe a valer.
 
 3. Suba os containers:
 
