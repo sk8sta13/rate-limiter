@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/redis/go-redis/v9"
 	"github.com/sk8sta13/rate-limiter/config"
+	"github.com/sk8sta13/rate-limiter/internal/infra/database"
 	"github.com/sk8sta13/rate-limiter/internal/infra/webserver/handlers"
 	"github.com/sk8sta13/rate-limiter/internal/infra/webserver/middlewares"
 )
@@ -24,14 +24,14 @@ type WebServer struct {
 	InternalMiddleware middlewares.Middleware
 }
 
-func NewWebServer(limits *config.Limits, redisCli *redis.Client) *WebServer {
+func NewWebServer(limits *config.Limits, db *database.DB) *WebServer {
 	newWebServer := WebServer{
 		Router:   chi.NewRouter(),
 		Handlers: make([]HandlerProps, 0),
 	}
 	newWebServer.InternalMiddleware = middlewares.Middleware{
-		RedisClient: redisCli,
-		Limits:      limits,
+		DB:     db,
+		Limits: limits,
 	}
 
 	newWebServer.AddHandler(http.MethodGet, "/", handlers.HelloWorld)

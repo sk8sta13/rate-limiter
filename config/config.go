@@ -11,21 +11,17 @@ type DB struct {
 	Pass string
 }
 
-type Redis struct {
-	Host string
-	Port int
-}
-
 type Ip struct {
 	MaxRequests          int
-	BloquedSeconds       int
 	MaxRequestsInSeconds int
+	BloquedSeconds       int
 }
 
 type Token struct {
-	Token          string
-	MaxRequests    int
-	BloquedSeconds int
+	Token                string
+	MaxRequests          int
+	MaxRequestsInSeconds int
+	BloquedSeconds       int
 }
 
 type Limits struct {
@@ -34,7 +30,7 @@ type Limits struct {
 }
 
 type Settings struct {
-	Redis  Redis
+	DB     DB
 	Limits Limits
 }
 
@@ -57,31 +53,35 @@ func LoadSettings(s *Settings) {
 
 func ReadSettings(s *Settings) {
 	*s = Settings{
-		Redis: Redis{
-			Host: viper.GetString("REDIS_HOST"),
-			Port: viper.GetInt("REDIS_PORT"),
+		DB: DB{
+			Host: viper.GetString("DB_HOST"),
+			Port: viper.GetInt("DB_PORT"),
+			Pass: viper.GetString("DB_PASS"),
 		},
 		Limits: Limits{
 			Ip: Ip{
 				MaxRequests:          viper.GetInt("IP_MAX_REQUESTS"),
-				BloquedSeconds:       viper.GetInt("IP_BLOCKED_FOR_SECONDS"),
 				MaxRequestsInSeconds: viper.GetInt("IP_MAX_REQUESTS_IN_SECONDS"),
+				BloquedSeconds:       viper.GetInt("IP_BLOCKED_FOR_SECONDS"),
 			},
 			Token: []Token{
 				{
-					Token:          viper.GetString("TONEK_P"),
-					MaxRequests:    viper.GetInt("TOKEN_P_MAX_REQEUSTS_PER_SECOND"),
-					BloquedSeconds: viper.GetInt("TOKEN_P_BLOCKED_SECONDS"),
+					Token:                viper.GetString("TONEK_P"),
+					MaxRequests:          viper.GetInt("TONEK_P_MAX_REQUESTS"),
+					MaxRequestsInSeconds: viper.GetInt("TOKEN_P_MAX_REQUESTS_IN_SECONDS"),
+					BloquedSeconds:       viper.GetInt("TOKEN_P_BLOCKED_FOR_SECONDS"),
 				},
 				{
-					Token:          viper.GetString("TONEK_M"),
-					MaxRequests:    viper.GetInt("TOKEN_M_MAX_REQUESTS_PER_SECOND"),
-					BloquedSeconds: viper.GetInt("TOKEN_M_BLOCKED_SECONDS"),
+					Token:                viper.GetString("TONEK_M"),
+					MaxRequests:          viper.GetInt("TONEK_M_MAX_REQUESTS"),
+					MaxRequestsInSeconds: viper.GetInt("TOKEN_M_MAX_REQUESTS_IN_SECONDS"),
+					BloquedSeconds:       viper.GetInt("TOKEN_M_BLOCKED_FOR_SECONDS"),
 				},
 				{
-					Token:          viper.GetString("TONEK_G"),
-					MaxRequests:    viper.GetInt("TOKEN_G_MAX_REQUESTS_PER_SECOND"),
-					BloquedSeconds: viper.GetInt("TOKEN_g_BLOCKED_SECONDS"),
+					Token:                viper.GetString("TONEK_G"),
+					MaxRequests:          viper.GetInt("TONEK_G_MAX_REQUESTS"),
+					MaxRequestsInSeconds: viper.GetInt("TOKEN_G_MAX_REQUESTS_IN_SECONDS"),
+					BloquedSeconds:       viper.GetInt("TOKEN_G_BLOCKED_FOR_SECONDS"),
 				},
 			},
 		},

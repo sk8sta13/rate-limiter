@@ -2,14 +2,11 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sk8sta13/rate-limiter/config"
-	"github.com/sk8sta13/rate-limiter/internal/dto"
 )
 
 type Redis struct {
@@ -24,41 +21,24 @@ func (db *Redis) Connect(config *config.DB) DBInterface {
 	}
 }
 
-func (db *Redis) GetData(ctx context.Context, key string, IPDB *dto.IPDB) {
+func (db *Redis) Get(ctx context.Context, key string) (string, error) {
 	val, err := db.Client.Get(ctx, key).Result()
 
-	if err != nil {
-		log.Println(err)
-	}
-
 	if errors.Is(err, redis.Nil) {
-		return
+		return "", nil
 	}
-
-	err = json.Unmarshal([]byte(val), &IPDB)
 
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
+
+	return val, nil
 }
 
-func (db *Redis) SetData(ctx context.Context, IPDB *dto.IPDB) {
-	data, _ := json.Marshal(map[string]interface{}{
-		"Qtd":         IPDB.Qtd,
-		"FirstMoment": IPDB.FirstMoment,
-		"LastMoment":  IPDB.LastMoment,
-	})
-
-	err := db.Client.Set(ctx, IPDB.Key, data, 0).Err()
-
-	if err != nil {
-		log.Println(err)
-	}
+func (db *Redis) Set(ctx context.Context, key string, data []byte) error {
+	return db.Client.Set(ctx, key, data, 0).Err()
 }
 
-func (db *Redis) DelData(ctx context.Context, key string) {
-	err := db.Client.Del(ctx, key).Err()
-	if err != nil {
-		log.Println(err)
-	}
+func (db *Redis) Del(ctx context.Context, key string) error {
+	return db.Client.Del(ctx, key).Err()
 }

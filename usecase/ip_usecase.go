@@ -2,37 +2,34 @@ package usecase
 
 import (
 	"context"
-	"fmt"
-	"log"
 
 	"github.com/sk8sta13/rate-limiter/config"
 	"github.com/sk8sta13/rate-limiter/internal/dto"
 	"github.com/sk8sta13/rate-limiter/internal/entity"
-	"github.com/sk8sta13/rate-limiter/internal/infra/database"
+	"github.com/sk8sta13/rate-limiter/internal/infra/database/repository"
 )
 
 type IPUseCase struct {
-	Ctx   *context.Context
-	Limit *config.Ip
-	Db    *database.IP
-	IPDB  dto.IPDB
+	Ctx        context.Context
+	Repository *repository.IpRepository
+	Limit      *config.Ip
+	IPDB       dto.IPDB
 }
 
-func NewIPUseCase(ctx *context.Context, limit *config.Ip, db *database.IP) *IPUseCase {
+func NewIPUseCase(ctx context.Context, limit *config.Ip, repository *repository.IpRepository) *IPUseCase {
 	return &IPUseCase{
-		Ctx:   ctx,
-		Limit: limit,
-		Db:    db,
+		Ctx:        ctx,
+		Limit:      limit,
+		Repository: repository,
 	}
 }
 
 func (i *IPUseCase) Execute(ip *dto.IPRequest) error {
-	i.Db.GetData(*i.Ctx, ip.IP, &i.IPDB)
+	i.Repository.GetData(i.Ctx, ip.IP, &i.IPDB)
 
 	i.checkFirstRequest(ip)
 
 	if i.isBloqued(ip) {
-		log.Println("IP blocked for exceeding maximum request")
 		return entity.ErrIPExceededMaxRequests
 	}
 
@@ -43,12 +40,9 @@ func (i *IPUseCase) Execute(ip *dto.IPRequest) error {
 
 func (i *IPUseCase) checkFirstRequest(ip *dto.IPRequest) {
 	diff := ip.CurrentMoment - i.IPDB.FirstMoment
-	log.Println(fmt.Sprintf("%s: %d > %d", ip.IP, diff, i.Limit.BloquedSeconds))
 	if diff > int64(i.Limit.BloquedSeconds) {
-		i.Db.DelData(*i.Ctx, ip.IP)
-		i.IPDB.Qtd = 0
-		i.IPDB.FirstMoment = 0
-		i.IPDB.LastMoment = 0
+		i.Repository.DelData(i.Ctx, ip.IP)
+		i.IPDB = dto.IPDB{}
 	}
 }
 
@@ -74,5 +68,5 @@ func (i *IPUseCase) registerAccess(ip *dto.IPRequest) {
 		ipdb.FirstMoment = i.IPDB.FirstMoment
 	}
 
-	i.Db.SetData(*i.Ctx, &ipdb)
+	i.Repository.SetData(i.Ctx, &ipdb)
 }

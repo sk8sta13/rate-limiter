@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/sk8sta13/rate-limiter/config"
-	"github.com/sk8sta13/rate-limiter/internal/dto"
 )
 
 type DB struct {
@@ -15,14 +14,14 @@ func (DB *DB) SetDB(db DBInterface, config *config.DB) {
 	DB.strategy = db.Connect(config)
 }
 
-func (DB *DB) SetData(ctx context.Context, IPDB *dto.IPDB) {
-	DB.strategy.SetData(ctx, IPDB)
+func (DB *DB) Set(ctx context.Context, key string, data []byte) error {
+	return DB.strategy.Set(ctx, key, data)
 }
 
-func (DB *DB) GetData(ctx context.Context, key string, IPDB *dto.IPDB) {
-	DB.strategy.GetData(ctx, key, IPDB)
+func (DB *DB) Get(ctx context.Context, key string) (string, error) {
+	return DB.strategy.Get(ctx, key)
 }
 
-func (DB *DB) DelData(ctx context.Context, key string) {
-	DB.strategy.DelData(ctx, key)
+func (DB *DB) Del(ctx context.Context, key string) error {
+	return DB.strategy.Del(ctx, key)
 }
