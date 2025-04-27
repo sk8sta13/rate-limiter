@@ -68,8 +68,6 @@ Faça as requests:
    curl http://localhost:8080
    ```  
 
-    OU
-
    ```bash
    curl http://localhost:8080 -H "API_KEY: ffa1754d27f18f1a95b5f9a76adfb62b64982691"
    ```  
