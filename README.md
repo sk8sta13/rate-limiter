@@ -73,6 +73,40 @@ Faça as requests:
    ```  
 O sistema verificará a quantidade de acessos e aplicará as regras de limitação conforme configurado.
 
+Outro ponto é que ao editar uma configuração não é necessário restartar o programa, basta salvar o .env e o programa passara a considerar as novas configurações.
+
+## Detalhes do desenvolvimento
+
+### Como é aplicado as regras para o ip e ou token?
+
+Ao receber uma request verificamos se o dado "API_KEY" está presente no head, se sim então seguindo a regra de precedencia o middleware de token é aplicado, caso esse dado não sejá enviado no header da request então aplicamos o middleware de ip.
+
+Os dados salvos no redis tem a seuginte estrutura:
+
+```bash
+{"FirstMoment": 1745773976, "LastMoment": 1745773980, "Qtd": 10}
+```
+
+- FirstMoment: Esse dado representa em timestamp a primeira request realizada;
+- LastMoment: Esse dado representa em timestamp a última request realizada;
+- Qtd: Representa o número de requests realizadas;
+
+Tanto para o middleware de IP quanto o Token seguem essa estrutura o que diferencia eles dentro do redis é o key, para o IP o key é simplismente o próprio IP, e para o Token o key do redis é o Token informado no API_KEY com o IP.
+
+Com esses dados é possivel aplicar as regras definidas, veja no video abaixo:
+
+https://github.com/user-attachments/assets/c597b8f2-4ddf-4683-9a9d-b71d40610320
+
+## Teste e Estresse
+
+Utilizando o programa ab, eu executei 1000 request, sendo 100 paralelas e mandei escrever um arquivo teste com a saida do programa:
+
+![image](https://github.com/user-attachments/assets/70240ef2-73bc-4a59-83d3-8b0e20866950)
+
+Verifique que no arquivo teste tenho 765 request foram diferentes de status code 200, e sabemdo que o meu programa retorna apenas três status code possíveis 200, 401 e 429.  
+Já removendo a possibilidade de erro no API_KEY informado pois eu setei um válido, sendo assim sabemos que nenhuma das requests retornaram 401 unauthorized.  
+Eu fiz uma busca por uma string "HTTP/1.0 429" no arquivo que tem os status code de todas as requests realizadas e temos agora certeza de que o programa está funcionando corretamente pois o número de ocorrências encontrado bate exatamente com o número de requests diferentes de 200 do relatório do programa utilizado para o teste "ab", podemos ver isso nos dados destacados em um retangulo vermelho no print.
+
 ## Observações
 
 Se o token exceder o número de requisições permitido, o IP ou token será bloqueado por um tempo configurável.
